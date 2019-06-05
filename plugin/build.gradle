@@ -1,0 +1,141 @@
+buildscript {
+    repositories {
+        jcenter()
+        maven {
+            name = "minecraftforge"
+            url = "http://files.minecraftforge.net/maven"
+        }
+        maven {
+            name = "spongepowered"
+            url = "https://repo.spongepowered.org/maven"
+        }
+    }
+
+    dependencies {
+        classpath("com.github.jengelman.gradle.plugins:shadow:4.0.4")
+        classpath("net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT")
+        classpath("org.spongepowered:mixingradle:0.6-SNAPSHOT")
+    }
+}
+
+apply plugin: "com.github.johnrengelman.shadow"
+apply plugin: "java"
+apply plugin: "net.minecraftforge.gradle.forge"
+apply plugin: "org.spongepowered.mixin"
+apply plugin: "signing"
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+group = "io.github.lxgaming"
+archivesBaseName = "virtualinventory-plugin"
+version = version
+
+minecraft {
+    version = "1.12.2-14.23.5.2768"
+    runDir = "run"
+    mappings = "stable_39"
+    makeObfSourceJar = false
+}
+
+mixin {
+    defaultObfuscationEnv = searge
+    disableRefMapWarning = true
+    add(sourceSets.main, "mixins.virtualinventory.refmap.json")
+}
+
+configurations {
+    provided {
+        compile.extendsFrom(provided)
+    }
+
+    compileJava.dependsOn(":api:build")
+    extractAnnotationsJar.enabled = false
+    jar.enabled = false
+    jar.dependsOn("shadowJar")
+}
+
+repositories {
+    jcenter()
+    maven {
+        name = "spongepowered"
+        url = "https://repo.spongepowered.org/maven"
+    }
+}
+
+dependencies {
+    shadow(project(path: ":api")) {
+        transitive = false
+    }
+    annotationProcessor("org.spongepowered:spongecommon:1.12.2-7.1.5:dev")
+    provided("org.spongepowered:spongecommon:1.12.2-7.1.5:dev")
+}
+
+shadowJar {
+    classifier = null
+    configurations = [project.configurations.shadow]
+}
+
+reobf {
+    shadowJar {
+        mappingType = "SEARGE"
+    }
+}
+
+jar {
+    manifest {
+        attributes(
+                "FMLCorePluginContainsFMLMod": true,
+                "ForceLoadAsMod": true,
+                "MixinConfigs": "mixins.virtualinventory.core.json",
+                "TweakClass": "org.spongepowered.asm.launch.MixinTweaker"
+        )
+    }
+
+    from {
+        (configurations.compile - configurations.provided).findAll({
+            it.isDirectory() || it.name.endsWith(".jar")
+        }).collect({
+            it.isDirectory() ? it : zipTree(it)
+        })
+    }
+
+    exclude("dummyThing")
+}
+
+processResources {
+    from("LICENSE")
+    rename("LICENSE", "LICENSE-" + archivesBaseName)
+}
+
+task signJar {
+    doFirst {
+        if (!project.hasProperty("signing.keyStorePath") || !project.hasProperty("signing.secretKeyRingFile")) {
+            project.logger.warn("========== [WARNING] ==========")
+            project.logger.warn("")
+            project.logger.warn("   This build is not signed!   ")
+            project.logger.warn("")
+            project.logger.warn("========== [WARNING] ==========")
+            throw new StopExecutionException()
+        }
+    }
+
+    doLast {
+        configurations.archives.allArtifacts.files.each {
+            ant.signjar(
+                jar: it,
+                alias: project.property("signing.alias"),
+                storepass: project.property("signing.keyStorePassword"),
+                keystore: project.property("signing.keyStorePath"),
+                keypass: project.property("signing.keyStorePassword"),
+                preservelastmodified: project.property("signing.preserveLastModified"),
+                tsaurl: project.property("signing.timestampAuthority"),
+                digestalg: project.property("signing.digestAlgorithm")
+            )
+            project.logger.lifecycle("JAR Signed: " + it.name)
+
+            signing.sign(it)
+            project.logger.lifecycle("PGP Signed: " + it.name)
+        }
+    }
+}
