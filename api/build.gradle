@@ -17,8 +17,6 @@ configurations {
     provided {
         compile.extendsFrom(provided)
     }
-
-    build.dependsOn("uploadArchives")
 }
 
 repositories {
