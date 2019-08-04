@@ -32,7 +32,7 @@ archivesBaseName = "virtualinventory-plugin"
 version = version
 
 minecraft {
-    version = "1.12.2-14.23.5.2768"
+    version = "1.12.2-14.23.5.2838"
     runDir = "run"
     mappings = "stable_39"
     makeObfSourceJar = false
@@ -67,8 +67,8 @@ dependencies {
     shadow(project(path: ":api")) {
         transitive = false
     }
-    annotationProcessor("org.spongepowered:spongecommon:1.12.2-7.1.5:dev")
-    provided("org.spongepowered:spongecommon:1.12.2-7.1.5:dev")
+    annotationProcessor("org.spongepowered:spongecommon:1.12.2-7.1.6:dev")
+    provided("org.spongepowered:spongecommon:1.12.2-7.1.6:dev")
 }
 
 shadowJar {
