@@ -26,12 +26,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @Mixin(targets = "net/minecraft/network/PacketThreadUtil$1")
-public abstract class MixinPacketThreadUtil {
+public abstract class PacketThreadUtilMixin {
     
     /**
-     * Intercept packets before Sponge's filthy fucken {@link org.spongepowered.common.event.tracking.PhaseTracker PhaseTracker}.
+     * Intercept packets before Sponge's {@link org.spongepowered.common.event.tracking.PhaseTracker PhaseTracker}.
      *
-     * @see <a href="https://github.com/SpongePowered/SpongeCommon/blob/stable-7/src/main/java/org/spongepowered/common/mixin/core/util/MixinPacketThreadUtil.java">MixinPacketThreadUtil</a>
+     * @see <a href="https://github.com/SpongePowered/SpongeCommon/blob/stable-7/src/main/java/org/spongepowered/common/mixin/core/util/PacketThreadUtil$1Mixin.java">PacketThreadUtil$1Mixin</a>
      */
     @Inject(method = "run()V",
             at = @At(value = "INVOKE",

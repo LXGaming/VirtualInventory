@@ -6,7 +6,7 @@
   "target": "@env(DEFAULT)",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
-    "network.MixinPacketThreadUtil"
+    "network.PacketThreadUtilMixin"
   ],
   "injectors": {
     "defaultRequire": 1
